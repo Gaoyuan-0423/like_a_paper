@@ -38,6 +38,7 @@ Use this top-level shape:
   "claim_ceiling": "...",
   "previous_link": "...",
   "next_link": "...",
+  "change_note": "...",
   "risk_flags": [],
   "status": "drafted",
   "approved_by": null,
@@ -100,6 +101,17 @@ Preserve:
 ### `claim_ceiling`
 
 State the strongest conclusion permitted by the evidence. For a direct descriptive sentence, this can be a short boundary statement. For an inference, name the prohibited stronger claim.
+
+### `change_note`
+
+Write the user-facing **修改说明**:
+
+- for a revision, state the material change from the prior manuscript or prior reviewed version and why it was made;
+- for a new sentence, state the approved paragraph role, evidence boundary, or distilled writing decision that shaped it;
+- distinguish a wording change from a change in scientific meaning;
+- never describe a literature sentence as a template to imitate.
+
+New ledgers should include this field. The validator accepts older ledgers without it for backward compatibility but warns that the compact review view will be incomplete.
 
 ### `risk_flags`
 
@@ -239,39 +251,51 @@ For each sentence:
 7. translate faithfully into Chinese;
 8. add a short source note and locator when literature is used;
 9. explain the previous and next link;
-10. add risks;
-11. validate;
-12. submit for user review.
+10. add the user-facing change note;
+11. add risks;
+12. validate;
+13. submit for user review.
 
 Do not start from an attractive source sentence and mutate it into the manuscript sentence.
 
 ## Human-readable presentation
 
-Render each sentence as a review card:
+Keep two distinct views.
+
+### Default user review view
+
+Before the sentences, explain the section's content, function, evidence path, and connection to the surrounding section. Then render each sentence in manuscript order without exposing internal IDs or risk metadata:
 
 ```text
-DISC-02-04 | mechanism interpretation | drafted
-
 English
 ...
 
 中文
 ...
 
-Claim type and ceiling
+对应依据
 ...
 
-Evidence
-- [direct/current analysis] ...
-- [contextual/literature] ...
-
-Logic
-- Previous: ...
-- Next: ...
-
-Risks
-- ...
+修改说明
+...
 ```
+
+The evidence field must match the sentence:
+
+- literature claim: short excerpt or faithful source note + citation + locator + relation;
+- current-study result: figure/table/analysis/dataset locator;
+- method: method/data/code record and, when genuinely needed, originating literature;
+- objective or transition: approved gap/blueprint logic and “no external citation required.”
+
+After the review unit, ask:
+
+> 这一部分是否需要修改？如果不需要，请回复“无需修改，继续”。
+
+The reply approves the exact displayed version for that clearly named unit. Map the approval to the hidden IDs and timestamp internally. If the user asks for a change, revise only the affected sentence and any sentence whose logic genuinely depends on it.
+
+### Optional audit view
+
+When the user requests a detailed audit, also show the stable ID, function, claim type and ceiling, evidence relations, previous/next links, risk flags, and approval status. The machine-readable ledger always retains those fields even when they are hidden from the default review view.
 
 When many sentences share the same source, keep each mapping explicit but avoid repeating a long excerpt. Refer to a stable evidence ID.
 
@@ -280,17 +304,17 @@ When many sentences share the same source, keep each mapping explicit but avoid 
 ### Current-study result
 
 ```json
-{"sentence_id":"RESULT-03-02","section":"Results","paragraph_id":"RESULT-03","function":"quantitative support","english":"The median response peaked 6 h after the event onset.","chinese":"中位响应在事件开始后6小时达到峰值。","claim_type":"study_result","evidence":[{"evidence_id":"FIG-4B","evidence_type":"figure","citation":"","locator":"Figure 4b; analysis table timing_summary.csv, row median","source_text_type":"artifact_note","source_text":"Median peak lag = 6 h under the approved event definition.","support_relation":"direct"}],"claim_ceiling":"Describes the approved sample; does not establish a causal delay mechanism.","previous_link":"Quantifies the timing pattern introduced in RESULT-03-01.","next_link":"Prepares the subgroup contrast in RESULT-03-03.","risk_flags":[],"status":"drafted","approved_by":null,"approved_at":null,"notes":""}
+{"sentence_id":"RESULT-03-02","section":"Results","paragraph_id":"RESULT-03","function":"quantitative support","english":"The median response peaked 6 h after the event onset.","chinese":"中位响应在事件开始后6小时达到峰值。","claim_type":"study_result","evidence":[{"evidence_id":"FIG-4B","evidence_type":"figure","citation":"","locator":"Figure 4b; analysis table timing_summary.csv, row median","source_text_type":"artifact_note","source_text":"Median peak lag = 6 h under the approved event definition.","support_relation":"direct"}],"claim_ceiling":"Describes the approved sample; does not establish a causal delay mechanism.","previous_link":"Quantifies the pattern introduced in RESULT-03-01.","next_link":"Prepares the subgroup contrast in RESULT-03-03.","change_note":"Replaces the vague phrase 'a delayed peak' with the frozen 6 h value and limits the statement to the approved sample.","risk_flags":[],"status":"drafted","approved_by":null,"approved_at":null,"notes":""}
 ```
 
 ### Interpretation with literature
 
 ```json
-{"sentence_id":"DISC-02-04","section":"Discussion","paragraph_id":"DISC-02","function":"mechanism interpretation","english":"The delayed response is consistent with storm-driven circulation changes redistributing energy in the lower thermosphere.","chinese":"这种延迟响应与风暴驱动的环流变化在低热层重新分配能量的解释一致。","claim_type":"author_inference","evidence":[{"evidence_id":"ANALYSIS-LAG","evidence_type":"analysis","citation":"","locator":"Approved lag analysis; Figure 4","source_text_type":"artifact_note","source_text":"Response lag and confidence interval from the current study.","support_relation":"direct"},{"evidence_id":"LIT-A","evidence_type":"literature","citation":"Author et al. (Year)","locator":"Discussion, paragraph 2; DOI or stable identifier","source_text_type":"paraphrase","source_text":"The study links delayed lower-thermospheric temperature changes to circulation and vertical-motion responses.","support_relation":"contextual"}],"claim_ceiling":"Permits consistency, not causal identification; alternative transport and sampling explanations remain.","previous_link":"Interprets the lag quantified in the preceding sentence.","next_link":"Introduces why the available observations cannot distinguish the candidate mechanisms.","risk_flags":["causal-overreach"],"status":"drafted","approved_by":null,"approved_at":null,"notes":""}
+{"sentence_id":"DISC-02-04","section":"Discussion","paragraph_id":"DISC-02","function":"mechanism interpretation","english":"The delayed response is consistent with storm-driven circulation changes redistributing energy in the lower thermosphere.","chinese":"这种延迟响应与风暴驱动的环流变化在低热层重新分配能量的解释一致。","claim_type":"author_inference","evidence":[{"evidence_id":"ANALYSIS-LAG","evidence_type":"analysis","citation":"","locator":"Approved lag analysis; Figure 4","source_text_type":"artifact_note","source_text":"Response lag and confidence interval from the current study.","support_relation":"direct"},{"evidence_id":"LIT-A","evidence_type":"literature","citation":"Author et al. (Year)","locator":"Discussion, paragraph 2; DOI or stable identifier","source_text_type":"paraphrase","source_text":"The study links delayed lower-thermospheric temperature changes to circulation and vertical-motion responses.","support_relation":"contextual"}],"claim_ceiling":"Permits consistency, not causal identification; alternative transport and sampling explanations remain.","previous_link":"Interprets the lag quantified in the preceding sentence.","next_link":"Introduces why the available observations cannot distinguish the candidate mechanisms.","change_note":"Uses 'is consistent with' rather than a causal verb because the current analysis shows timing while the literature offers contextual mechanism support.","risk_flags":["causal-overreach"],"status":"drafted","approved_by":null,"approved_at":null,"notes":""}
 ```
 
 ### Transition
 
 ```json
-{"sentence_id":"DISC-03-01","section":"Discussion","paragraph_id":"DISC-03","function":"transition","english":"This timing dependence motivates a separate examination of local-time structure.","chinese":"这种时间依赖性促使我们进一步单独考察地方时结构。","claim_type":"transition","evidence":[{"evidence_id":"BLUEPRINT-DISC-03","evidence_type":"rhetorical","citation":"","locator":"Approved paragraph blueprint DISC-02 to DISC-03","source_text_type":"artifact_note","source_text":"Move from timing to local-time structure.","support_relation":"rhetorical"}],"claim_ceiling":"Organizational transition only; does not claim a physical mechanism.","previous_link":"Closes the timing interpretation in DISC-02.","next_link":"Opens the local-time result comparison in DISC-03-02.","risk_flags":[],"status":"drafted","approved_by":null,"approved_at":null,"notes":""}
+{"sentence_id":"DISC-03-01","section":"Discussion","paragraph_id":"DISC-03","function":"transition","english":"This timing dependence motivates a separate examination of local-time structure.","chinese":"这种时间依赖性促使我们进一步单独考察地方时结构。","claim_type":"transition","evidence":[{"evidence_id":"BLUEPRINT-DISC-03","evidence_type":"rhetorical","citation":"","locator":"Approved paragraph blueprint DISC-02 to DISC-03","source_text_type":"artifact_note","source_text":"Move from timing to local-time structure.","support_relation":"rhetorical"}],"claim_ceiling":"Organizational transition only; does not claim a physical mechanism.","previous_link":"Closes the timing interpretation in DISC-02.","next_link":"Opens the local-time result comparison in DISC-03-02.","change_note":"Adds an explicit timing-to-local-time bridge from the approved blueprint; no external citation is needed for this organizational move.","risk_flags":[],"status":"drafted","approved_by":null,"approved_at":null,"notes":""}
 ```

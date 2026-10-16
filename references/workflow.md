@@ -214,6 +214,17 @@ Before showing a batch:
 6. shorten quoted source text;
 7. identify any decision the user still owns.
 
+Keep the complete ledger internal. The default user-facing review should not expose sentence IDs, claim-type labels, ceilings, logic fields, risk flags, or status metadata unless the user requests an audit view or a conflict cannot be explained safely without them.
+
+At the start of each section or coherent review unit, give a short orientation covering its intended content, scientific/rhetorical function, main evidence path, and link to neighboring parts. Then show each sentence in manuscript order with exactly four primary fields:
+
+1. English;
+2. 中文;
+3. 对应依据;
+4. 修改说明.
+
+Do not force a “corresponding literature sentence” where literature is not the correct evidence. Use current-study artifacts for results, method records for methods, and the approved blueprint for objectives or transitions.
+
 ## Section approval gates
 
 Present manageable batches. Recommended order:
@@ -226,7 +237,13 @@ Present manageable batches. Recommended order:
 6. conclusions;
 7. captions, availability statements, and supplements.
 
-The user may approve by sentence ID, paragraph ID, section, or a clearly delimited batch. Record scope exactly. Never interpret approval of one version as approval of later substantive changes.
+At the end of a Chinese-language review unit, ask exactly:
+
+> 这一部分是否需要修改？如果不需要，请回复“无需修改，继续”。
+
+If the user replies “无需修改，继续”, treat that as explicit approval of the exact displayed version and evidence mapping for the clearly named review unit. Record the hidden sentence IDs and timestamp. The user may also approve by quoted sentence, paragraph, section, or another clearly delimited batch; do not require internal IDs.
+
+If the user requests changes, revise only the affected sentences and any genuinely dependent link sentence. Preserve all unaffected wording and approvals. Never interpret approval of one version as approval of later substantive changes. Silence, a topic change, or feedback on only one sentence is not approval of the rest.
 
 ## Stage 5 — Assembly
 

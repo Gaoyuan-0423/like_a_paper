@@ -18,6 +18,7 @@ Build a manuscript from verified research evidence and a corpus-derived writing 
 7. Preserve modality in translation: `may`, `suggest`, `support`, `indicate`, `demonstrate`, association, and causation are not interchangeable.
 8. Stop at every mandatory gate. Silence, partial feedback, or approval of one item is not permission to continue.
 9. Do not start corpus-derived writing until every enabled corpus model passes the adequacy gate for the requested sections. Paper count alone is not a pass.
+10. Keep the full machine-readable audit trail internally, but do not burden the user with internal IDs, claim labels, risk flags, or status fields by default. The normal review surface is a compact four-field bilingual view.
 
 ## Start the task
 
@@ -150,7 +151,32 @@ Draft section by section. For every candidate sentence, record:
 - previous-sentence and next-sentence logic;
 - risk flags and approval status.
 
+Also record a concise `change_note` for the user. If revising an existing sentence, state what changed and why. If drafting a new sentence, state which approved paragraph function, evidence boundary, or journal/author-associated decision governed it. Never say that a source sentence was used as a template.
+
 Do not describe a source as direct support when it is only contextual or analogous. Mark synthesis and inference explicitly.
+
+Before showing the sentences for a section or other coherent review unit, briefly explain:
+
+- what this part says;
+- what scientific or rhetorical job it performs;
+- which evidence path it uses;
+- how it connects to the surrounding part.
+
+Then show every candidate sentence in manuscript order using only these four fields by default:
+
+1. **English**;
+2. **中文**;
+3. **对应依据**;
+4. **修改说明**.
+
+Adapt **对应依据** to the claim type:
+
+- for an external fact or literature comparison, show a short verified excerpt or faithful source note, citation, locator, and support relation;
+- for a current-study result, show the relevant figure, table, analysis, or dataset locator instead of forcing a literature sentence;
+- for a method sentence, show the method record, code, data documentation, or originating literature as applicable;
+- for an objective or transition, say that no external citation is required and identify the approved gap or paragraph-logic basis.
+
+Keep sentence IDs, claim ceilings, logic links, risk flags, and approval metadata in the ledger. Show them only when the user requests the audit view or when one is necessary to explain a conflict or safety boundary.
 
 Validate the machine-readable ledger:
 
@@ -166,7 +192,13 @@ python scripts/render_ledger.py path/to/sentence_ledger.jsonl --output path/to/s
 
 ### Mandatory section gates — Approve sentences
 
-Deliver manageable batches, normally one section at a time. Let the user approve, reject, split, merge, weaken, strengthen, or re-source each sentence. Preserve sentence IDs through revisions.
+Deliver manageable batches, normally one section at a time. After the four-field review, ask one concise question in the user's language. For a Chinese-speaking user, use:
+
+> 这一部分是否需要修改？如果不需要，请回复“无需修改，继续”。
+
+That reply explicitly approves the exact displayed version and evidence mapping for the clearly named review unit. Record the approval against the hidden sentence IDs. If the user requests changes, revise only the affected sentences, keep unchanged approved text stable, and resubmit the affected review unit. A substantive revision invalidates approval only for the changed sentence and any downstream sentence whose meaning or logic depends on it.
+
+Let the user approve, reject, split, merge, weaken, strengthen, or re-source any sentence without requiring them to use internal IDs. Preserve the IDs internally through revisions. Silence is never approval.
 
 Never place a sentence marked `drafted`, `needs_revision`, or `rejected` into the clean manuscript.
 

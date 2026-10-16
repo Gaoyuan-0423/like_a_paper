@@ -215,6 +215,14 @@ def validate_record(
     if missing:
         add_issue(errors, line_no, sentence_id, f"missing fields: {', '.join(sorted(missing))}")
 
+    if "change_note" not in record or not is_nonempty_string(record.get("change_note")):
+        add_issue(
+            warnings,
+            line_no,
+            sentence_id,
+            "change_note is missing; the compact user review will not explain what changed or which drafting rule was applied",
+        )
+
     if not SENTENCE_ID_RE.fullmatch(sentence_id):
         add_issue(errors, line_no, sentence_id, "sentence_id must match SECTION-PP-SS, e.g. DISC-02-04")
     elif sentence_id in seen_ids:
