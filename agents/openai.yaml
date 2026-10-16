@@ -1,0 +1,4 @@
+interface:
+  display_name: "Like a Paper"
+  short_description: "Evidence-gated, corpus-grounded paper writing"
+  default_prompt: "Use $like-a-paper to verify corpus adequacy, distill journal or author writing decisions, pause for my approval, and draft an evidence-traceable manuscript."
