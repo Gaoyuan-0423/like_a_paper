@@ -72,6 +72,25 @@ def add_false_requirement(
         failures.append(f"{label}: {field} must be false")
 
 
+def separate_blocked_checks(
+    failures: list[str], downstream_fields: tuple[str, ...]
+) -> tuple[list[str], list[str]]:
+    """Separate prerequisite failures from stability checks that could not be reached."""
+    downstream = [
+        failure
+        for failure in failures
+        if any(field in failure for field in downstream_fields)
+    ]
+    primary = [failure for failure in failures if failure not in downstream]
+    if not primary:
+        return failures, []
+    blocked = [
+        failure.replace(" must be true", " is not established because a prerequisite failed")
+        for failure in downstream
+    ]
+    return primary, blocked
+
+
 JOURNAL_FIELDS = {
     "enabled",
     "usable_full_texts",
@@ -155,6 +174,8 @@ def assess_journal(
             "model": label,
             "schema_errors": [f"{label} must be an object"],
             "failures": [],
+            "primary_failures": [],
+            "blocked_checks": [],
             "eligible_sections": [],
             "ineligible_sections": requested_sections,
             "global_pass": False,
@@ -198,10 +219,16 @@ def assess_journal(
     if is_int(usable) and is_int(discovery) and is_int(validation) and discovery + validation != usable:
         schema_errors.append(f"{label}: discovery_papers + validation_papers must equal usable_full_texts")
 
+    failures, blocked_checks = separate_blocked_checks(
+        failures, ("holdout_rules_confirmed",)
+    )
+
     return {
         "model": label,
         "schema_errors": schema_errors,
         "failures": failures,
+        "primary_failures": failures,
+        "blocked_checks": blocked_checks,
         "eligible_sections": eligible,
         "ineligible_sections": ineligible,
         "global_pass": not schema_errors and not failures,
@@ -217,6 +244,8 @@ def assess_author(
             "model": label,
             "schema_errors": [f"{label} must be an object"],
             "failures": [],
+            "primary_failures": [],
+            "blocked_checks": [],
             "eligible_sections": [],
             "ineligible_sections": requested_sections,
             "global_pass": False,
@@ -273,10 +302,17 @@ def assess_author(
     if is_int(usable) and is_int(discovery) and is_int(validation) and discovery + validation != usable:
         schema_errors.append(f"{label}: discovery_papers + validation_papers must equal usable_full_texts")
 
+    failures, blocked_checks = separate_blocked_checks(
+        failures,
+        ("holdout_rules_confirmed", "leave_largest_cluster_out_confirmed"),
+    )
+
     return {
         "model": label,
         "schema_errors": schema_errors,
         "failures": failures,
+        "primary_failures": failures,
+        "blocked_checks": blocked_checks,
         "eligible_sections": eligible,
         "ineligible_sections": ineligible,
         "global_pass": not schema_errors and not failures,
@@ -292,6 +328,50 @@ def print_model(result: dict[str, Any]) -> None:
         print(f"  SCHEMA ERROR: {error}")
     for failure in result["failures"]:
         print(f"  REQUIREMENT FAIL: {failure}")
+    for blocked in result.get("blocked_checks", []):
+        print(f"  NOT ESTABLISHED: {blocked}")
+
+
+def diagnostic_labels(
+    mode: str, results: dict[str, dict[str, Any]], data: dict[str, Any]
+) -> list[str]:
+    """Return non-verdict routing labels. Labels never change eligibility."""
+    labels: list[str] = []
+    if mode == "hybrid":
+        if results.get("journal", {}).get("global_pass") and not results.get(
+            "author", {}
+        ).get("global_pass"):
+            labels.append("JOURNAL_ONLY_ELIGIBLE")
+        if results.get("author", {}).get("global_pass") and not results.get(
+            "journal", {}
+        ).get("global_pass"):
+            labels.append("AUTHOR_ONLY_ELIGIBLE")
+
+    author = data.get("author_model")
+    if isinstance(author, dict) and not results.get("author", {}).get("global_pass", True):
+        def author_floor(field: str, minimum: int) -> bool:
+            value = author.get(field)
+            return is_int(value) and value >= minimum
+
+        exploratory_floors = (
+            author_floor("usable_full_texts", 8)
+            and author_floor("author_led_full_texts", 2)
+            and author_floor("journals", 2)
+            and author_floor("coauthor_or_lab_clusters", 2)
+            and author_floor("matched_controls", 4)
+            and author_floor("control_contexts", 2)
+        )
+        if exploratory_floors:
+            labels.append("EXPLORATORY_AUTHOR_PROFILE_ONLY")
+
+    journal = data.get("journal_model")
+    if (
+        isinstance(journal, dict)
+        and not results.get("journal", {}).get("global_pass", True)
+        and journal.get("verified_current_author_guide") is True
+    ):
+        labels.append("FORMAL_REQUIREMENTS_ONLY")
+    return labels
 
 
 def main() -> int:
@@ -342,6 +422,7 @@ def main() -> int:
         for section in requested_sections
         if all(section in result["eligible_sections"] for result in results.values())
     ]
+    downgrade_labels = diagnostic_labels(mode, results, data)
 
     if schema_errors:
         verdict = "FAIL"
@@ -378,6 +459,7 @@ def main() -> int:
         "verdict": verdict,
         "eligible_sections": eligible_intersection,
         "models": results,
+        "diagnostic_labels": downgrade_labels,
         "next_action": next_action,
     }
 
@@ -387,6 +469,7 @@ def main() -> int:
     for result in results.values():
         print_model(result)
     print(f"\nEligible intersection: {', '.join(eligible_intersection) or 'none'}")
+    print(f"Diagnostic labels: {', '.join(downgrade_labels) or 'none'}")
     print(f"Next action: {next_action}")
 
     if args.output:

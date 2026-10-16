@@ -83,6 +83,8 @@ Apply the verdict strictly:
 
 Hybrid mode passes only when the journal and author-associated models independently pass. Never let one successful model conceal failure of the other.
 
+Keep diagnostic downgrade labels separate from verdicts. A label such as `JOURNAL_ONLY_ELIGIBLE`, `EXPLORATORY_AUTHOR_PROFILE_ONLY`, `FIELD_CONVENTION_PROFILE_ONLY`, or `FORMAL_REQUIREMENTS_ONLY` describes a permitted next workflow; it never changes `FAIL` or authorizes the failed model to govern prose. Distinguish a primary corpus shortfall from downstream tests that were not reached.
+
 ### Stage 2 — Finalize distilled writing decisions
 
 Read [references/style-contract.md](references/style-contract.md).

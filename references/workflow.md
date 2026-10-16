@@ -32,8 +32,8 @@ Maintain a small state record with these fields:
   "mode": "journal|author|hybrid",
   "evidence_state": "open|frozen|reopened",
   "corpus_adequacy_state": "not_assessed|pass|section_limited|fail|invalidated",
-  "contract_state": "drafted|approved|rejected|revised",
-  "blueprint_state": "drafted|approved|rejected|revised",
+  "contract_state": "not_started|drafted|approved|rejected|revised",
+  "blueprint_state": "not_started|drafted|approved|rejected|revised",
   "section_states": {},
   "manuscript_state": "not_started|assembling|assembled|audited",
   "last_user_approval": null
@@ -118,6 +118,8 @@ Apply the validator verdict without relabeling:
 In hybrid mode, both models must independently pass. If one fails, hybrid fails. The user may explicitly approve a downgrade to the model that passed, but the failed model contributes no writing rules.
 
 Do not use user willingness to accept risk as evidence that the corpus passed. A user may choose a different workflow, not change the factual adequacy verdict.
+
+The validator may emit diagnostic downgrade labels. Treat them as routing information only. Record the primary blocking requirement separately from holdout or cluster tests that were not reached. An exploratory author or field-convention profile may be reported, but it cannot supply sentence-generation rules or satisfy Gate 1.
 
 ## Stage 2 — Distillation and contract
 

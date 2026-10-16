@@ -10,7 +10,8 @@
 6. Discovery/validation protocol
 7. Cluster-removal test
 8. Hybrid-mode rule
-9. Adequacy record and gate behavior
+9. Diagnostic downgrades
+10. Adequacy record and gate behavior
 
 ## Purpose
 
@@ -32,6 +33,8 @@ There is no “user accepts the risk, therefore call it PASS” option. The user
 2. narrow the requested sections;
 3. switch from hybrid to the model that passed;
 4. proceed with generic evidence-grounded writing while explicitly abandoning the claim of corpus-derived style.
+
+Report one primary blocker before listing dependent checks that could not be completed. For example, if an author corpus has too few author-led papers, holdout confirmation and leave-largest-cluster-out stability are **not established**, not independent evidence that three separate defects occurred. The verdict remains `FAIL`.
 
 ## General requirements for every enabled model
 
@@ -163,6 +166,20 @@ If only one model passes:
 
 If both models pass overall but differ by section, hybrid writing is allowed only in the intersection of their eligible sections. Other sections require a different approved mode.
 
+## Diagnostic downgrades
+
+Diagnostic labels are not verdicts and must never be presented as a pass.
+
+- `JOURNAL_ONLY_ELIGIBLE`: hybrid mode failed, but the journal model passed. After explicit user approval, discard all failed author rules and restart the contract in journal mode.
+- `AUTHOR_ONLY_ELIGIBLE`: hybrid mode failed, but the author-associated model passed. After explicit user approval, discard all failed journal tendencies and restart the contract in author mode while retaining formal journal requirements separately.
+- `EXPLORATORY_AUTHOR_PROFILE_ONLY`: enough associated papers exist to inspect confounds, but attribution or stability floors fail. Report candidate, conditional, and confounded observations for research insight only. They cannot constrain generated prose.
+- `FIELD_CONVENTION_PROFILE_ONLY`: a narrow field lacks enough papers from one target journal or author, but a documented cross-journal corpus covers the scientific task. It may inform field-level rhetorical obligations and terminology only. Do not call it target-journal or author style.
+- `FORMAL_REQUIREMENTS_ONLY`: the current journal guide is verified but the published-paper corpus fails. Apply only explicit format and policy requirements; use generic evidence-grounded writing for prose.
+
+For a field-convention profile, require at least six direct usable full texts, three independent teams, two journals or venues, two publication periods, two held-out papers, four examples per governed section, and the same extraction, counterexample, saturation, and phrase-exclusion safeguards. This profile remains an alternate workflow under `FAIL`; it does not satisfy a journal, author, or hybrid adequacy gate.
+
+An exploratory author profile should normally have at least eight associated full texts, two journals, two team/context configurations, four matched controls across two contexts, and at least two author-led papers. These floors permit analysis, not author-derived writing. If even these are missing, report only a corpus inventory.
+
 ## Corpus adequacy record
 
 Create `corpus-adequacy.json` and validate it with:
@@ -189,6 +206,6 @@ Also create a human-readable `corpus-adequacy-report.md` containing:
 
 - On **PASS**, proceed to drafting the writing contract, then stop at Gate 1 for user approval.
 - On **SECTION_LIMITED**, present the eligible sections and stop. Continue only if the user narrows the authorized scope accordingly.
-- On **FAIL**, stop corpus-derived writing. Request specific missing materials or offer an explicitly different, non-corpus-derived workflow.
+- On **FAIL**, stop corpus-derived writing. Report the primary blocker, mark dependent tests as not established, request specific missing materials, or offer one of the explicitly labeled alternate workflows above.
 
 Never describe a FAIL or SECTION_LIMITED corpus as fully distilled.
